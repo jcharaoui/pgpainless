@@ -45,6 +45,7 @@ import org.pgpainless.algorithm.SignatureSubpacket;
 import org.pgpainless.algorithm.SymmetricKeyAlgorithm;
 import org.pgpainless.key.OpenPgpFingerprint;
 import org.pgpainless.key.OpenPgpV4Fingerprint;
+import org.pgpainless.key.OpenPgpV5Fingerprint;
 import org.pgpainless.key.generation.type.KeyType;
 import org.pgpainless.signature.SignatureUtils;
 
@@ -72,6 +73,12 @@ public final class SignatureSubpacketsUtil {
         return hashedOrUnhashed(signature, SignatureSubpacket.issuerFingerprint);
     }
 
+    public static List<IssuerFingerprint> getIssuerFingerprints(PGPSignature signature) {
+        List<IssuerFingerprint> fingerprints = getSignatureSubpackets(signature.getHashedSubPackets(), SignatureSubpacket.issuerFingerprint);
+        fingerprints.addAll(getSignatureSubpackets(signature.getUnhashedSubPackets(), SignatureSubpacket.issuerFingerprint));
+        return fingerprints;
+    }
+
     /**
      * Return the {@link IssuerFingerprint} subpacket of the signature into a {@link org.pgpainless.key.OpenPgpFingerprint}.
      * If no v4 issuer fingerprint is present in the signature, return null.
@@ -85,12 +92,31 @@ public final class SignatureSubpacketsUtil {
             return null;
         }
 
-        OpenPgpFingerprint fingerprint = null;
-        if (subpacket.getKeyVersion() == 4) {
-            fingerprint = new OpenPgpV4Fingerprint(subpacket.getFingerprint());
+        return issuerFingerprintToOpenPgpFingerprint(subpacket);
+    }
+
+    public static List<OpenPgpFingerprint> getIssuerFingerprintsAsOpenPgpFingerprints(PGPSignature signature) {
+        List<IssuerFingerprint> subpackets = getIssuerFingerprints(signature);
+        List<OpenPgpFingerprint> fingerprints = new ArrayList<>();
+
+        for (IssuerFingerprint subpacket : subpackets) {
+            OpenPgpFingerprint fingerprint = issuerFingerprintToOpenPgpFingerprint(subpacket);
+            if (fingerprint != null) {
+                fingerprints.add(fingerprint);
+            }
         }
 
-        return fingerprint;
+        return fingerprints;
+    }
+
+    private static OpenPgpFingerprint issuerFingerprintToOpenPgpFingerprint(@Nonnull IssuerFingerprint issuerFingerprint) {
+        if (issuerFingerprint.getKeyVersion() == 4) {
+            return new OpenPgpV4Fingerprint(issuerFingerprint.getFingerprint());
+        } else if (issuerFingerprint.getKeyVersion() == 5) {
+            return new OpenPgpV5Fingerprint(issuerFingerprint.getFingerprint());
+        } else {
+            return null;
+        }
     }
 
     public static List<IssuerKeyID> getIssuerKeyIds(PGPSignature signature) {

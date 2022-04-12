@@ -1320,6 +1320,50 @@ public class CertificateValidatorTest {
         return new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
     }
 
+    private static final String CERT = "-----BEGIN PGP PUBLIC KEY BLOCK-----\n" +
+            "Comment: Bob's OpenPGP certificate\n" +
+            "\n" +
+            "mQGNBF2lnPIBDAC5cL9PQoQLTMuhjbYvb4Ncuuo0bfmgPRFywX53jPhoFf4Zg6mv\n" +
+            "/seOXpgecTdOcVttfzC8ycIKrt3aQTiwOG/ctaR4Bk/t6ayNFfdUNxHWk4WCKzdz\n" +
+            "/56fW2O0F23qIRd8UUJp5IIlN4RDdRCtdhVQIAuzvp2oVy/LaS2kxQoKvph/5pQ/\n" +
+            "5whqsyroEWDJoSV0yOb25B/iwk/pLUFoyhDG9bj0kIzDxrEqW+7Ba8nocQlecMF3\n" +
+            "X5KMN5kp2zraLv9dlBBpWW43XktjcCZgMy20SouraVma8Je/ECwUWYUiAZxLIlMv\n" +
+            "9CurEOtxUw6N3RdOtLmYZS9uEnn5y1UkF88o8Nku890uk6BrewFzJyLAx5wRZ4F0\n" +
+            "qV/yq36UWQ0JB/AUGhHVPdFf6pl6eaxBwT5GXvbBUibtf8YI2og5RsgTWtXfU7eb\n" +
+            "SGXrl5ZMpbA6mbfhd0R8aPxWfmDWiIOhBufhMCvUHh1sApMKVZnvIff9/0Dca3wb\n" +
+            "vLIwa3T4CyshfT0AEQEAAbQhQm9iIEJhYmJhZ2UgPGJvYkBvcGVucGdwLmV4YW1w\n" +
+            "bGU+iQHOBBMBCgA4AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAFiEE0aZuGiOx\n" +
+            "gsmYD3iM+/zIKgFeczAFAl2lnvoACgkQ+/zIKgFeczBvbAv/VNk90a6hG8Od9xTz\n" +
+            "XxH5YRFUSGfIA1yjPIVOnKqhMwps2U+sWE3urL+MvjyQRlyRV8oY9IOhQ5Esm6DO\n" +
+            "ZYrTnE7qVETm1ajIAP2OFChEc55uH88x/anpPOXOJY7S8jbn3naC9qad75BrZ+3g\n" +
+            "9EBUWiy5p8TykP05WSnSxNRt7vFKLfEB4nGkehpwHXOVF0CRNwYle42bg8lpmdXF\n" +
+            "DcCZCi+qEbafmTQzkAqyzS3nCh3IAqq6Y0kBuaKLm2tSNUOlZbD+OHYQNZ5Jix7c\n" +
+            "ZUzs6Xh4+I55NRWl5smrLq66yOQoFPy9jot/Qxikx/wP3MsAzeGaZSEPc0fHp5G1\n" +
+            "6rlGbxQ3vl8/usUV7W+TMEMljgwd5x8POR6HC8EaCDfVnUBCPi/Gv+egLjsIbPJZ\n" +
+            "ZEroiE40e6/UoCiQtlpQB5exPJYSd1Q1txCwueih99PHepsDhmUQKiACszNU+RRo\n" +
+            "zAYau2VdHqnRJ7QYdxHDiH49jPK4NTMyb/tJh2TiIwcmsIpGuQGNBF2lnPIBDADW\n" +
+            "ML9cbGMrp12CtF9b2P6z9TTT74S8iyBOzaSvdGDQY/sUtZXRg21HWamXnn9sSXvI\n" +
+            "DEINOQ6A9QxdxoqWdCHrOuW3ofneYXoG+zeKc4dC86wa1TR2q9vW+RMXSO4uImA+\n" +
+            "Uzula/6k1DogDf28qhCxMwG/i/m9g1c/0aApuDyKdQ1PXsHHNlgd/Dn6rrd5y2AO\n" +
+            "baifV7wIhEJnvqgFXDN2RXGjLeCOHV4Q2WTYPg/S4k1nMXVDwZXrvIsA0YwIMgIT\n" +
+            "86Rafp1qKlgPNbiIlC1g9RY/iFaGN2b4Ir6GDohBQSfZW2+LXoPZuVE/wGlQ01rh\n" +
+            "827KVZW4lXvqsge+wtnWlszcselGATyzqOK9LdHPdZGzROZYI2e8c+paLNDdVPL6\n" +
+            "vdRBUnkCaEkOtl1mr2JpQi5nTU+gTX4IeInC7E+1a9UDF/Y85ybUz8XV8rUnR76U\n" +
+            "qVC7KidNepdHbZjjXCt8/Zo+Tec9JNbYNQB/e9ExmDntmlHEsSEQzFwzj8sxH48A\n" +
+            "EQEAAYkBtgQYAQoAIBYhBNGmbhojsYLJmA94jPv8yCoBXnMwBQJdpZzyAhsMAAoJ\n" +
+            "EPv8yCoBXnMw6f8L/26C34dkjBffTzMj5Bdzm8MtF67OYneJ4TQMw7+41IL4rVcS\n" +
+            "KhIhk/3Ud5knaRtP2ef1+5F66h9/RPQOJ5+tvBwhBAcUWSupKnUrdVaZQanYmtSx\n" +
+            "cVV2PL9+QEiNN3tzluhaWO//rACxJ+K/ZXQlIzwQVTpNhfGzAaMVV9zpf3u0k14i\n" +
+            "tcv6alKY8+rLZvO1wIIeRZLmU0tZDD5HtWDvUV7rIFI1WuoLb+KZgbYn3OWjCPHV\n" +
+            "dTrdZ2CqnZbG3SXw6awH9bzRLV9EXkbhIMez0deCVdeo+wFFklh8/5VK2b0vk/+w\n" +
+            "qMJxfpa1lHvJLobzOP9fvrswsr92MA2+k901WeISR7qEzcI0Fdg8AyFAExaEK6Vy\n" +
+            "jP7SXGLwvfisw34OxuZr3qmx1Sufu4toH3XrB7QJN8XyqqbsGxUCBqWif9RSK4xj\n" +
+            "zRTe56iPeiSJJOIciMP9i2ldI+KgLycyeDvGoBj0HCLO3gVaBe4ubVrj5KjhX2PV\n" +
+            "NEJd3XZRzaXZE2aAMQ==\n" +
+            "=NXei\n" +
+            "-----END PGP PUBLIC KEY BLOCK-----\n";
+    private static final String DATA = "Hello World :)";
+
     @Test
     public void testNoIssuer() throws IOException, PGPException {
         String SIG = "-----BEGIN PGP SIGNATURE-----\n" +
@@ -1338,49 +1382,134 @@ public class CertificateValidatorTest {
                 "=NDO/\n" +
                 "-----END PGP SIGNATURE-----\n";
 
-        String CERT = "-----BEGIN PGP PUBLIC KEY BLOCK-----\n" +
-                "Comment: Bob's OpenPGP certificate\n" +
+        DecryptionStream decryptionStream = PGPainless.decryptAndOrVerify()
+                .onInputStream(new ByteArrayInputStream(DATA.getBytes(StandardCharsets.UTF_8)))
+                .withOptions(new ConsumerOptions()
+                        .addVerificationCert(PGPainless.readKeyRing().publicKeyRing(CERT))
+                        .addVerificationOfDetachedSignatures(new ByteArrayInputStream(SIG.getBytes(StandardCharsets.UTF_8))));
+
+        Streams.drain(decryptionStream);
+
+        decryptionStream.close();
+        OpenPgpMetadata metadata = decryptionStream.getResult();
+
+        assertFalse(metadata.getVerifiedSignatures().isEmpty());
+    }
+
+    @Test
+    public void testIssuerFakeIssuer() throws IOException, PGPException {
+        String SIG = "-----BEGIN PGP SIGNATURE-----\n" +
                 "\n" +
-                "mQGNBF2lnPIBDAC5cL9PQoQLTMuhjbYvb4Ncuuo0bfmgPRFywX53jPhoFf4Zg6mv\n" +
-                "/seOXpgecTdOcVttfzC8ycIKrt3aQTiwOG/ctaR4Bk/t6ayNFfdUNxHWk4WCKzdz\n" +
-                "/56fW2O0F23qIRd8UUJp5IIlN4RDdRCtdhVQIAuzvp2oVy/LaS2kxQoKvph/5pQ/\n" +
-                "5whqsyroEWDJoSV0yOb25B/iwk/pLUFoyhDG9bj0kIzDxrEqW+7Ba8nocQlecMF3\n" +
-                "X5KMN5kp2zraLv9dlBBpWW43XktjcCZgMy20SouraVma8Je/ECwUWYUiAZxLIlMv\n" +
-                "9CurEOtxUw6N3RdOtLmYZS9uEnn5y1UkF88o8Nku890uk6BrewFzJyLAx5wRZ4F0\n" +
-                "qV/yq36UWQ0JB/AUGhHVPdFf6pl6eaxBwT5GXvbBUibtf8YI2og5RsgTWtXfU7eb\n" +
-                "SGXrl5ZMpbA6mbfhd0R8aPxWfmDWiIOhBufhMCvUHh1sApMKVZnvIff9/0Dca3wb\n" +
-                "vLIwa3T4CyshfT0AEQEAAbQhQm9iIEJhYmJhZ2UgPGJvYkBvcGVucGdwLmV4YW1w\n" +
-                "bGU+iQHOBBMBCgA4AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAFiEE0aZuGiOx\n" +
-                "gsmYD3iM+/zIKgFeczAFAl2lnvoACgkQ+/zIKgFeczBvbAv/VNk90a6hG8Od9xTz\n" +
-                "XxH5YRFUSGfIA1yjPIVOnKqhMwps2U+sWE3urL+MvjyQRlyRV8oY9IOhQ5Esm6DO\n" +
-                "ZYrTnE7qVETm1ajIAP2OFChEc55uH88x/anpPOXOJY7S8jbn3naC9qad75BrZ+3g\n" +
-                "9EBUWiy5p8TykP05WSnSxNRt7vFKLfEB4nGkehpwHXOVF0CRNwYle42bg8lpmdXF\n" +
-                "DcCZCi+qEbafmTQzkAqyzS3nCh3IAqq6Y0kBuaKLm2tSNUOlZbD+OHYQNZ5Jix7c\n" +
-                "ZUzs6Xh4+I55NRWl5smrLq66yOQoFPy9jot/Qxikx/wP3MsAzeGaZSEPc0fHp5G1\n" +
-                "6rlGbxQ3vl8/usUV7W+TMEMljgwd5x8POR6HC8EaCDfVnUBCPi/Gv+egLjsIbPJZ\n" +
-                "ZEroiE40e6/UoCiQtlpQB5exPJYSd1Q1txCwueih99PHepsDhmUQKiACszNU+RRo\n" +
-                "zAYau2VdHqnRJ7QYdxHDiH49jPK4NTMyb/tJh2TiIwcmsIpGuQGNBF2lnPIBDADW\n" +
-                "ML9cbGMrp12CtF9b2P6z9TTT74S8iyBOzaSvdGDQY/sUtZXRg21HWamXnn9sSXvI\n" +
-                "DEINOQ6A9QxdxoqWdCHrOuW3ofneYXoG+zeKc4dC86wa1TR2q9vW+RMXSO4uImA+\n" +
-                "Uzula/6k1DogDf28qhCxMwG/i/m9g1c/0aApuDyKdQ1PXsHHNlgd/Dn6rrd5y2AO\n" +
-                "baifV7wIhEJnvqgFXDN2RXGjLeCOHV4Q2WTYPg/S4k1nMXVDwZXrvIsA0YwIMgIT\n" +
-                "86Rafp1qKlgPNbiIlC1g9RY/iFaGN2b4Ir6GDohBQSfZW2+LXoPZuVE/wGlQ01rh\n" +
-                "827KVZW4lXvqsge+wtnWlszcselGATyzqOK9LdHPdZGzROZYI2e8c+paLNDdVPL6\n" +
-                "vdRBUnkCaEkOtl1mr2JpQi5nTU+gTX4IeInC7E+1a9UDF/Y85ybUz8XV8rUnR76U\n" +
-                "qVC7KidNepdHbZjjXCt8/Zo+Tec9JNbYNQB/e9ExmDntmlHEsSEQzFwzj8sxH48A\n" +
-                "EQEAAYkBtgQYAQoAIBYhBNGmbhojsYLJmA94jPv8yCoBXnMwBQJdpZzyAhsMAAoJ\n" +
-                "EPv8yCoBXnMw6f8L/26C34dkjBffTzMj5Bdzm8MtF67OYneJ4TQMw7+41IL4rVcS\n" +
-                "KhIhk/3Ud5knaRtP2ef1+5F66h9/RPQOJ5+tvBwhBAcUWSupKnUrdVaZQanYmtSx\n" +
-                "cVV2PL9+QEiNN3tzluhaWO//rACxJ+K/ZXQlIzwQVTpNhfGzAaMVV9zpf3u0k14i\n" +
-                "tcv6alKY8+rLZvO1wIIeRZLmU0tZDD5HtWDvUV7rIFI1WuoLb+KZgbYn3OWjCPHV\n" +
-                "dTrdZ2CqnZbG3SXw6awH9bzRLV9EXkbhIMez0deCVdeo+wFFklh8/5VK2b0vk/+w\n" +
-                "qMJxfpa1lHvJLobzOP9fvrswsr92MA2+k901WeISR7qEzcI0Fdg8AyFAExaEK6Vy\n" +
-                "jP7SXGLwvfisw34OxuZr3qmx1Sufu4toH3XrB7QJN8XyqqbsGxUCBqWif9RSK4xj\n" +
-                "zRTe56iPeiSJJOIciMP9i2ldI+KgLycyeDvGoBj0HCLO3gVaBe4ubVrj5KjhX2PV\n" +
-                "NEJd3XZRzaXZE2aAMQ==\n" +
-                "=NXei\n" +
-                "-----END PGP PUBLIC KEY BLOCK-----\n";
-        String DATA = "Hello World :)";
+                "wsEuBAABCABOBYJiVdvoRxQAAAAAAB4AIHNhbHRAbm90YXRpb25zLnNlcXVvaWEt\n" +
+                "cGdwLm9yZziTJYEXbvrPrSZC/ZhOrQRXem5VvmP4cAAyu8+OsWYMABQJEPv8yCoB\n" +
+                "XnMwCRCqqru7zMzd3WftC/9IjroXgdTFm7HUrDoYoqj17IwoIRhjeUkuPfmZKfSv\n" +
+                "6F6YgHgTFQcMyLTcUzL30qzLDYLjWxZboiv2dvZylMWwzwXLfMM9DD2xNs/zAsgJ\n" +
+                "5op9wgzerx2WCzJYWg79wknkMNzILyscjBOIiSK1nXYZg8D7+Y6ZGr5qjufQ6++u\n" +
+                "xT6EDEK8WwjWIFyV1JO30e6o/mFXiskC4HeClblhBbcNV2tx3Uz0rY8Jstfa2Drr\n" +
+                "Eb4G3MoxCE8GVh3xGwbXZIeVzUX7xNI0n/9KoTjNq3CJEt+bN0AZCL/MIsns0b4B\n" +
+                "URMrM9KcC8CAUulqVqWp1pPvWxNR4Z5rBy5VIboFN1Lmdk261u5xhEDQd1ZYceaX\n" +
+                "AR46tmdim/hdh3wJ66KGofKGvk47ZZi5uGZngwWPOUfsyPkMWt4+e6HKiOHeWPlo\n" +
+                "wE9zbawxE4kXGZXtPyzYWJ93kYpKiYBsTBIaBEHu7TekWL90kyOxvLojBxvKzV5b\n" +
+                "LTBxodwh1J36MsCTyl7J8a4=\n" +
+                "=hGQP\n" +
+                "-----END PGP SIGNATURE-----\n";
+
+        DecryptionStream decryptionStream = PGPainless.decryptAndOrVerify()
+                .onInputStream(new ByteArrayInputStream(DATA.getBytes(StandardCharsets.UTF_8)))
+                .withOptions(new ConsumerOptions()
+                        .addVerificationCert(PGPainless.readKeyRing().publicKeyRing(CERT))
+                        .addVerificationOfDetachedSignatures(new ByteArrayInputStream(SIG.getBytes(StandardCharsets.UTF_8))));
+
+        Streams.drain(decryptionStream);
+
+        decryptionStream.close();
+        OpenPgpMetadata metadata = decryptionStream.getResult();
+
+        assertFalse(metadata.getVerifiedSignatures().isEmpty());
+    }
+
+    @Test
+    public void testFakeIssuerIssuer() throws IOException, PGPException {
+        String SIG = "-----BEGIN PGP SIGNATURE-----\n" +
+                "\n" +
+                "wsEuBAABCABOBYJiVdvoRxQAAAAAAB4AIHNhbHRAbm90YXRpb25zLnNlcXVvaWEt\n" +
+                "cGdwLm9yZxmM4YWln474ON+fma6Zg9RcflZ5IxmwImPZCATNyow8ABQJEKqqu7vM\n" +
+                "zN3dCRD7/MgqAV5zMB4GC/9qR05itFbTxjlHti1S7V2foZgqgb5KR8LbWLyX/m3j\n" +
+                "YctvlPyDmnIAp9vzI1P8JwQK5ubCx5/BcDgU6JgL9hl5JmtpDLfCdBypOCdZJhrz\n" +
+                "+MDvrxohWXXVHhWTbBoDu3U+5e7HuoDPrvsxEFTG/BVxXlLlOnVKJeTES3BEFj+G\n" +
+                "U8x8chWW82Koh/3sBE2+FPHCepZAlkrr6TF+j8QVmZ3kz5Qd7Y7hXjXi3BA2Fb1g\n" +
+                "LNCNATzt/Uuc42MIjaDuXqvvqrnR/DlRCKXZKwurp1Gcc2kGE4iYw1vzf2kcKUS6\n" +
+                "0gQ2wCexgdiojUheHXNaDp6pgng9V2B+T1GOUhEUCYh8pnQRva0HkueLbu5MVXuE\n" +
+                "h6GbId1qkRvmDiVSjJIY6AbU1uryvNjRCAh+zTPhVSBc5ZuWpAuGeiK+os+sVLbM\n" +
+                "TYozxdINWMwlLbueD0rPy2iAKVF9xRy/uMIUlXBOOFa0vtr/LbEbt/Z+HEmkEbSA\n" +
+                "nOU6uODYKlnq6J5e1oykx1I=\n" +
+                "=HwGW\n" +
+                "-----END PGP SIGNATURE-----\n";
+
+        DecryptionStream decryptionStream = PGPainless.decryptAndOrVerify()
+                .onInputStream(new ByteArrayInputStream(DATA.getBytes(StandardCharsets.UTF_8)))
+                .withOptions(new ConsumerOptions()
+                        .addVerificationCert(PGPainless.readKeyRing().publicKeyRing(CERT))
+                        .addVerificationOfDetachedSignatures(new ByteArrayInputStream(SIG.getBytes(StandardCharsets.UTF_8))));
+
+        Streams.drain(decryptionStream);
+
+        decryptionStream.close();
+        OpenPgpMetadata metadata = decryptionStream.getResult();
+
+        assertFalse(metadata.getVerifiedSignatures().isEmpty());
+    }
+
+    @Test
+    public void testIssuerFakeIssuerV6IssuerFp() throws IOException, PGPException {
+        String SIG = "-----BEGIN PGP SIGNATURE-----\n" +
+                "\n" +
+                "wsFTBAABCABOBYJiVdvoRxQAAAAAAB4AIHNhbHRAbm90YXRpb25zLnNlcXVvaWEt\n" +
+                "cGdwLm9yZ3l3fkL3IE31d0/2jrnPb7vgSpgZLx/yyaA/rq5a4IgFADkJEPv8yCoB\n" +
+                "XnMwCRCqqru7zMzd3SQhBqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq\n" +
+                "qqq1NgwAj0/RjdIITzOC6RblmUrFiB4GxcE5704Kcs++AfEDNTkHOT7j6VGdj+IL\n" +
+                "xKeEHq0LTH8OIWXtAQUxZjJaHVMwwsA7D3BYWaL8YJ5dgbDrtSAXyGXz5+WBPVFQ\n" +
+                "ucka8ZRsolCF2VA6WuY1LI4cUYVx0Y6ZvaNtbyhEUtDQhu9UDJN8Ty18uq3M2Trb\n" +
+                "MwGJBpb92zrLtmIhhuoeIienSPYek+nCs1dVPBIu/Z4nyUaDoWSEWPgKJd+7dB6q\n" +
+                "v6kMHKpN/tu6Wq0jJ28E2IkvNH4+OdPmKFzHcDF3dXxd8hwzsXPolDA3yPO+891Q\n" +
+                "wnDKUvvlKbzz2Dvfce2Qv2DQkWufWrhSS8j6zqo0O97AEPpDSGoIMFlphvpcp/S5\n" +
+                "sz+okAOMU1lfhrMx3rZPi31HgfhcPExRmQBQOdxRXD0nqaCwZJWKRsUK1XxtQNHk\n" +
+                "r7al/8tPjlHs2KhE/XPYSjI3rc8ZnSvhnl3yzjSkDGkcM0bt7O+HpZUuQNvTy76K\n" +
+                "tXgaehUQ\n" +
+                "=v71i\n" +
+                "-----END PGP SIGNATURE-----\n";
+
+        DecryptionStream decryptionStream = PGPainless.decryptAndOrVerify()
+                .onInputStream(new ByteArrayInputStream(DATA.getBytes(StandardCharsets.UTF_8)))
+                .withOptions(new ConsumerOptions()
+                        .addVerificationCert(PGPainless.readKeyRing().publicKeyRing(CERT))
+                        .addVerificationOfDetachedSignatures(new ByteArrayInputStream(SIG.getBytes(StandardCharsets.UTF_8))));
+
+        Streams.drain(decryptionStream);
+
+        decryptionStream.close();
+        OpenPgpMetadata metadata = decryptionStream.getResult();
+
+        assertFalse(metadata.getVerifiedSignatures().isEmpty());
+    }
+
+    @Test
+    public void testFakeIssuerIssuerV6IssuerFp() throws IOException, PGPException {
+        String SIG = "-----BEGIN PGP SIGNATURE-----\n" +
+                "\n" +
+                "wsEuBAABCABOBYJiVdvoRxQAAAAAAB4AIHNhbHRAbm90YXRpb25zLnNlcXVvaWEt\n" +
+                "cGdwLm9yZziTJYEXbvrPrSZC/ZhOrQRXem5VvmP4cAAyu8+OsWYMABQJEPv8yCoB\n" +
+                "XnMwCRCqqru7zMzd3WftC/9IjroXgdTFm7HUrDoYoqj17IwoIRhjeUkuPfmZKfSv\n" +
+                "6F6YgHgTFQcMyLTcUzL30qzLDYLjWxZboiv2dvZylMWwzwXLfMM9DD2xNs/zAsgJ\n" +
+                "5op9wgzerx2WCzJYWg79wknkMNzILyscjBOIiSK1nXYZg8D7+Y6ZGr5qjufQ6++u\n" +
+                "xT6EDEK8WwjWIFyV1JO30e6o/mFXiskC4HeClblhBbcNV2tx3Uz0rY8Jstfa2Drr\n" +
+                "Eb4G3MoxCE8GVh3xGwbXZIeVzUX7xNI0n/9KoTjNq3CJEt+bN0AZCL/MIsns0b4B\n" +
+                "URMrM9KcC8CAUulqVqWp1pPvWxNR4Z5rBy5VIboFN1Lmdk261u5xhEDQd1ZYceaX\n" +
+                "AR46tmdim/hdh3wJ66KGofKGvk47ZZi5uGZngwWPOUfsyPkMWt4+e6HKiOHeWPlo\n" +
+                "wE9zbawxE4kXGZXtPyzYWJ93kYpKiYBsTBIaBEHu7TekWL90kyOxvLojBxvKzV5b\n" +
+                "LTBxodwh1J36MsCTyl7J8a4=\n" +
+                "=hGQP\n" +
+                "-----END PGP SIGNATURE-----\n";
 
         DecryptionStream decryptionStream = PGPainless.decryptAndOrVerify()
                 .onInputStream(new ByteArrayInputStream(DATA.getBytes(StandardCharsets.UTF_8)))

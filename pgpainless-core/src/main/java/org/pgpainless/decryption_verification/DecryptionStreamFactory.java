@@ -110,14 +110,31 @@ public final class DecryptionStreamFactory {
 
     private void initializeDetachedSignatures(Set<PGPSignature> signatures) {
         for (PGPSignature signature : signatures) {
-            long issuerKeyId = SignatureUtils.determineIssuerKeyId(signature);
-            PGPPublicKeyRing signingKeyRing = findSignatureVerificationKeyRing(issuerKeyId);
+
+            List<Long> issuers = SignatureUtils.determineSignatureIssuers(signature);
+            if (issuers.isEmpty()) {
+                resultBuilder.addInvalidDetachedSignature(new SignatureVerification(signature, null),
+                        new SignatureValidationException("Signature does not contain issuer information."));
+                continue;
+            }
+
+            PGPPublicKeyRing signingKeyRing = null;
+            long issuerKeyId = 0;
+            for (long candidate : issuers) {
+                issuerKeyId = candidate;
+                signingKeyRing = findSignatureVerificationKeyRing(issuerKeyId);
+                if (signingKeyRing != null) {
+                    break;
+                }
+            }
+
             if (signingKeyRing == null) {
                 SignatureValidationException ex = new SignatureValidationException(
-                        "Missing verification certificate " + Long.toHexString(issuerKeyId));
+                        "Missing verification certificate " + Long.toHexString(issuers.get(0)));
                 resultBuilder.addInvalidDetachedSignature(new SignatureVerification(signature, null), ex);
                 continue;
             }
+
             PGPPublicKey signingKey = signingKeyRing.getPublicKey(issuerKeyId);
             SubkeyIdentifier signingKeyIdentifier = new SubkeyIdentifier(signingKeyRing, signingKey.getKeyID());
             try {

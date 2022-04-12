@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -294,6 +295,15 @@ public final class SignatureUtils {
             return fingerprint.getKeyId();
         }
         return 0;
+    }
+
+    public static List<Long> determineSignatureIssuers(PGPSignature signature) {
+        Set<Long> issuers = new HashSet<>(SignatureSubpacketsUtil.getIssuerKeyIdsAsLongs(signature));
+        List<OpenPgpFingerprint> fingerprints = SignatureSubpacketsUtil.getIssuerFingerprintsAsOpenPgpFingerprints(signature);
+        for (OpenPgpFingerprint fingerprint : fingerprints) {
+            issuers.add(fingerprint.getKeyId());
+        }
+        return new ArrayList<>(issuers);
     }
 
     /**

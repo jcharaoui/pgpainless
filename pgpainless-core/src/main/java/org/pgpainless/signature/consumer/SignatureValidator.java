@@ -60,27 +60,35 @@ public abstract class SignatureValidator {
                 OpenPgpFingerprint signingKeyFingerprint = OpenPgpFingerprint.of(signingKey);
 
                 List<Long> issuers = SignatureSubpacketsUtil.getIssuerKeyIdsAsLongs(signature);
-                boolean match = false;
                 for (Long issuer : issuers) {
                     if (issuer == 0L || issuer == signingKey.getKeyID()) {
-                        match = true;
-                        break;
+                        // Match or wildcard issuer
+                        return;
                     }
                 }
 
-                if (!match) {
+                List<OpenPgpFingerprint> fingerprints = SignatureSubpacketsUtil.getIssuerFingerprintsAsOpenPgpFingerprints(signature);
+                for (OpenPgpFingerprint fingerprint : fingerprints) {
+                    if (fingerprint.equals(signingKeyFingerprint)) {
+                        // Match
+                        return;
+                    }
+                }
+
+                // There were only mismatching fingerprints
+                if (!fingerprints.isEmpty()) {
+                    throw new SignatureValidationException("Signature was not created by " + signingKeyFingerprint +
+                            " (signature fingerprints: " + Arrays.toString(fingerprints.toArray(new OpenPgpFingerprint[0])) + ")");
+                }
+
+                // There were only mismatching issuers
+                if (!issuers.isEmpty()) {
                     String[] hex = new String[issuers.size()];
                     for (int i = 0; i < hex.length; i++) {
                         hex[i] = Long.toHexString(issuers.get(i));
                     }
-                    throw new SignatureValidationException("Signature was not created by " + signingKeyFingerprint + " (signature issuers: " + Arrays.toString(hex) + ")");
-                }
-
-                OpenPgpFingerprint fingerprint = SignatureSubpacketsUtil.getIssuerFingerprintAsOpenPgpFingerprint(signature);
-                if (fingerprint != null) {
-                    if (!fingerprint.equals(signingKeyFingerprint)) {
-                        throw new SignatureValidationException("Signature was not created by " + signingKeyFingerprint + " (signature fingerprint: " + fingerprint + ")");
-                    }
+                    throw new SignatureValidationException("Signature was not created by " + signingKeyFingerprint +
+                            " (signature issuer: " + Arrays.toString(hex) + ")");
                 }
 
                 // No issuer information found, so we cannot rule out that we did not create the sig
