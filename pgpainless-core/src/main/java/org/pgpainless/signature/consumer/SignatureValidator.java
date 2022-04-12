@@ -59,11 +59,21 @@ public abstract class SignatureValidator {
             public void verify(PGPSignature signature) throws SignatureValidationException {
                 OpenPgpFingerprint signingKeyFingerprint = OpenPgpFingerprint.of(signingKey);
 
-                Long issuer = SignatureSubpacketsUtil.getIssuerKeyIdAsLong(signature);
-                if (issuer != null) {
-                    if (issuer != signingKey.getKeyID()) {
-                        throw new SignatureValidationException("Signature was not created by " + signingKeyFingerprint + " (signature issuer: " + Long.toHexString(issuer) + ")");
+                List<Long> issuers = SignatureSubpacketsUtil.getIssuerKeyIdsAsLongs(signature);
+                boolean match = false;
+                for (Long issuer : issuers) {
+                    if (issuer == 0L || issuer == signingKey.getKeyID()) {
+                        match = true;
+                        break;
                     }
+                }
+
+                if (!match) {
+                    String[] hex = new String[issuers.size()];
+                    for (int i = 0; i < hex.length; i++) {
+                        hex[i] = Long.toHexString(issuers.get(i));
+                    }
+                    throw new SignatureValidationException("Signature was not created by " + signingKeyFingerprint + " (signature issuers: " + Arrays.toString(hex) + ")");
                 }
 
                 OpenPgpFingerprint fingerprint = SignatureSubpacketsUtil.getIssuerFingerprintAsOpenPgpFingerprint(signature);
@@ -170,14 +180,14 @@ public abstract class SignatureValidator {
             @Override
             public void verify(PGPSignature signature) throws SignatureValidationException {
                 PublicKeyAlgorithm algorithm = PublicKeyAlgorithm.requireFromId(signingKey.getAlgorithm());
-                    int bitStrength = signingKey.getBitStrength();
-                    if (bitStrength == -1) {
-                        throw new SignatureValidationException("Cannot determine bit strength of signing key.");
-                    }
-                    if (!policy.getPublicKeyAlgorithmPolicy().isAcceptable(algorithm, bitStrength)) {
-                        throw new SignatureValidationException("Signature was made using unacceptable key. " +
-                                algorithm + " (" + bitStrength + " bits) is not acceptable according to the public key algorithm policy.");
-                    }
+                int bitStrength = signingKey.getBitStrength();
+                if (bitStrength == -1) {
+                    throw new SignatureValidationException("Cannot determine bit strength of signing key.");
+                }
+                if (!policy.getPublicKeyAlgorithmPolicy().isAcceptable(algorithm, bitStrength)) {
+                    throw new SignatureValidationException("Signature was made using unacceptable key. " +
+                            algorithm + " (" + bitStrength + " bits) is not acceptable according to the public key algorithm policy.");
+                }
             }
         };
     }

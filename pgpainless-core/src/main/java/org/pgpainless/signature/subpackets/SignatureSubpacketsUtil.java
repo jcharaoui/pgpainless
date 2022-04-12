@@ -93,6 +93,21 @@ public final class SignatureSubpacketsUtil {
         return fingerprint;
     }
 
+    public static List<IssuerKeyID> getIssuerKeyIds(PGPSignature signature) {
+        List<IssuerKeyID> keyIds = getSignatureSubpackets(signature.getHashedSubPackets(), SignatureSubpacket.issuerKeyId);
+        keyIds.addAll(getSignatureSubpackets(signature.getUnhashedSubPackets(), SignatureSubpacket.issuerKeyId));
+        return keyIds;
+    }
+
+    public static List<Long> getIssuerKeyIdsAsLongs(PGPSignature signature) {
+        List<IssuerKeyID> keyIds = getIssuerKeyIds(signature);
+        List<Long> longs = new ArrayList<>();
+        for (IssuerKeyID keyID : keyIds) {
+            longs.add(keyID.getKeyID());
+        }
+        return longs;
+    }
+
     /**
      * Return the issuer key-id subpacket of the signature.
      * Since this packet is self-authenticating, we expect it to be in the unhashed area,
@@ -575,6 +590,16 @@ public final class SignatureSubpacketsUtil {
     private static <P extends org.bouncycastle.bcpg.SignatureSubpacket> P hashedOrUnhashed(PGPSignature signature, SignatureSubpacket type) {
         P hashedSubpacket = hashed(signature, type);
         return hashedSubpacket != null ? hashedSubpacket : unhashed(signature, type);
+    }
+
+    public static <P extends org.bouncycastle.bcpg.SignatureSubpacket> List<P> getSignatureSubpackets(
+            PGPSignatureSubpacketVector vector, SignatureSubpacket type) {
+        List<P> subpackets = new ArrayList<>();
+        org.bouncycastle.bcpg.SignatureSubpacket[] fromVector = vector.getSubpackets(type.getCode());
+        for (org.bouncycastle.bcpg.SignatureSubpacket p : fromVector) {
+            subpackets.add((P) p);
+        }
+        return subpackets;
     }
 
     /**
