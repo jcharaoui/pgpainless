@@ -4,6 +4,13 @@
 
 package org.pgpainless.sop;
 
+import com.sun.crypto.provider.SunJCE;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.KeyFactorySpi;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
+import org.pgpainless.implementation.BcImplementationFactory;
+import org.pgpainless.implementation.ImplementationFactory;
+import org.pgpainless.implementation.JceImplementationFactory;
 import sop.SOP;
 import sop.operation.Armor;
 import sop.operation.Dearmor;
@@ -15,8 +22,24 @@ import sop.operation.GenerateKey;
 import sop.operation.Sign;
 import sop.operation.Verify;
 import sop.operation.Version;
+import sun.security.ec.SunEC;
+
+import java.security.Provider;
+import java.security.Security;
 
 public class SOPImpl implements SOP {
+
+    static {
+        ImplementationFactory.setFactoryImplementation(new JceImplementationFactory());
+        Security.addProvider(new BouncyCastleProvider());
+        Security.addProvider(new SunJCE());
+        Security.addProvider(new SunEC());
+        new KeyFactorySpi();
+
+        Provider bcProv = Security.getProvider("BC");
+        Security.removeProvider("BC");
+        Security.insertProviderAt(bcProv, 1);
+    }
 
     @Override
     public Version version() {
