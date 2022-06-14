@@ -1,12 +1,19 @@
 package org.pgpainless.wot.dijkstra;
 
-import org.bouncycastle.openpgp.PGPPublicKeyRing;
+public class Node<T> {
 
-public class Node {
+    private final T item;
 
-    private PGPPublicKeyRing item;
+    public Node(T item) {
+        this.item = item;
+    }
 
-    public long getCertificateKeyId() {
-        return item.getPublicKey().getKeyID();
+    private T getItem() {
+        return item;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + getItem().toString() + ")";
     }
 }

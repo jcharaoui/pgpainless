@@ -23,6 +23,7 @@ import org.bouncycastle.bcpg.sig.KeyFlags;
 import org.bouncycastle.bcpg.sig.NotationData;
 import org.bouncycastle.bcpg.sig.PreferredAlgorithms;
 import org.bouncycastle.bcpg.sig.PrimaryUserID;
+import org.bouncycastle.bcpg.sig.RegularExpression;
 import org.bouncycastle.bcpg.sig.Revocable;
 import org.bouncycastle.bcpg.sig.RevocationKey;
 import org.bouncycastle.bcpg.sig.RevocationReason;
@@ -535,6 +536,15 @@ public final class SignatureSubpacketsUtil {
      */
     public static TrustSignature getTrustSignature(PGPSignature signature) {
         return hashed(signature, SignatureSubpacket.trustSignature);
+    }
+
+    public static List<RegularExpression> getRegularExpressions(PGPSignature signature) {
+        org.bouncycastle.bcpg.SignatureSubpacket[] subpackets = signature.getHashedSubPackets().getSubpackets(SignatureSubpacket.regularExpression.getCode());
+        List<RegularExpression> regularExpressions = new ArrayList<>(subpackets.length);
+        for (org.bouncycastle.bcpg.SignatureSubpacket subpacket : subpackets) {
+            regularExpressions.add((RegularExpression) subpacket);
+        }
+        return regularExpressions;
     }
 
     /**
