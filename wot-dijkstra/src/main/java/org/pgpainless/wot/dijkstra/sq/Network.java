@@ -65,7 +65,7 @@ public class Network {
         ReferenceTime referenceTime = optReferenceTime.isPresent() ? optReferenceTime.get() : ReferenceTime.now();
         List<KeyRingInfo> validCerts = new ArrayList<>();
         for (PGPPublicKeyRing cert : certificates) {
-            KeyRingInfo info = PGPainless.inspectKeyRing(cert, referenceTime.getTimestamp());
+            KeyRingInfo info = new KeyRingInfo(cert, policy, referenceTime.getTimestamp());
             if (info.getValidUserIds().isEmpty()) {
                 // Ignore invalid cert
             } else {
