@@ -1,5 +1,6 @@
 package org.pgpainless.wot.dijkstra.sq;
 
+import org.pgpainless.algorithm.RevocationState;
 import org.pgpainless.key.OpenPgpFingerprint;
 
 import java.util.Date;
@@ -10,31 +11,59 @@ public class CertSynopsis {
 
     private final OpenPgpFingerprint fingerprint;
     private final Date expirationTime;
-    private final boolean revoked;
+    private final RevocationState revocationState;
     private final Set<String> userIds;
 
+    /**
+     * Create a new {@link CertSynopsis}.
+     *
+     * @param fingerprint fingerprint of the certificate
+     * @param expirationTime expiration time
+     * @param revocationState revocation state of the certificate
+     * @param userIds set of user-ids
+     */
     public CertSynopsis(OpenPgpFingerprint fingerprint,
                         Date expirationTime,
-                        boolean revoked,
+                        RevocationState revocationState,
                         Set<String> userIds) {
         this.fingerprint = fingerprint;
         this.expirationTime = expirationTime;
-        this.revoked = revoked;
+        this.revocationState = revocationState;
         this.userIds = userIds;
     }
 
+    /**
+     * Return the fingerprint of the certificate.
+     *
+     * @return fingerprint
+     */
     public OpenPgpFingerprint getFingerprint() {
         return fingerprint;
     }
 
+    /**
+     * Get the certificates expiration time.
+     *
+     * @return expiration time
+     */
     public Date getExpirationTime() {
         return expirationTime;
     }
 
-    public boolean isRevoked() {
-        return revoked;
+    /**
+     * Get the revocation status of the certificate.
+     *
+     * @return revocation state
+     */
+    public RevocationState getRevocationState() {
+        return revocationState;
     }
 
+    /**
+     * Get a {@link Set} containing all user-ids of the certificate.
+     *
+     * @return user-ids
+     */
     public Set<String> userIds() {
         return new HashSet<>(userIds);
     }

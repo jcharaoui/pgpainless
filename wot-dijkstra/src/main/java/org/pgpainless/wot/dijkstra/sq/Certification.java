@@ -1,17 +1,13 @@
 package org.pgpainless.wot.dijkstra.sq;
 
-import org.bouncycastle.bcpg.sig.Exportable;
-import org.bouncycastle.bcpg.sig.RegularExpression;
-import org.bouncycastle.bcpg.sig.SignatureExpirationTime;
-import org.bouncycastle.bcpg.sig.TrustSignature;
-import org.bouncycastle.openpgp.PGPSignature;
-import org.graalvm.compiler.nodes.calc.IntegerDivRemNode;
-import org.pgpainless.signature.SignatureUtils;
-import org.pgpainless.signature.subpackets.SignatureSubpackets;
-import org.pgpainless.signature.subpackets.SignatureSubpacketsUtil;
-
 import java.util.Date;
 import java.util.List;
+
+import org.bouncycastle.bcpg.sig.Exportable;
+import org.bouncycastle.bcpg.sig.RegularExpression;
+import org.bouncycastle.bcpg.sig.TrustSignature;
+import org.bouncycastle.openpgp.PGPSignature;
+import org.pgpainless.signature.subpackets.SignatureSubpacketsUtil;
 
 public class Certification {
 
@@ -86,15 +82,84 @@ public class Certification {
         this.regex = RegexSet.fromList(regularExpressionList);
     }
 
+    /**
+     * Get the issuer of the certification.
+     *
+     * @return issuer
+     */
     public CertSynopsis getIssuer() {
         return issuer;
     }
 
+    /**
+     * Get the target of the certification.
+     *
+     * @return target
+     */
     public CertSynopsis getTarget() {
         return target;
     }
 
+    /**
+     * Get the target user-id.
+     *
+     * @return user-id
+     */
     public Optional<String> getUserId() {
         return userId;
+    }
+
+    /**
+     * Get the creation time of the certification,
+     *
+     * @return creation time
+     */
+    public Date getCreationTime() {
+        return creationTime;
+    }
+
+    /**
+     * Get the (optional) expiration time of the certification.
+     *
+     * @return optional expiration time
+     */
+    public Optional<Date> getExpirationTime() {
+        return expirationTime;
+    }
+
+    /**
+     * Return true if the certification is marked as exportable.
+     *
+     * @return exportable
+     */
+    public boolean isExportable() {
+        return exportable;
+    }
+
+    /**
+     * Get the trust amount of the certification.
+     *
+     * @return trust amount
+     */
+    public int getTrustAmount() {
+        return trustAmount;
+    }
+
+    /**
+     * Get the trust depth of the certification.
+     *
+     * @return trust depth
+     */
+    public int getTrustDepth() {
+        return trustDepth;
+    }
+
+    /**
+     * Return the set of regular expressions.
+     *
+     * @return regex set
+     */
+    public RegexSet getRegexes() {
+        return regex;
     }
 }

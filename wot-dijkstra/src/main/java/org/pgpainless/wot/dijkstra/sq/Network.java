@@ -5,17 +5,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
+import org.bouncycastle.bcpg.sig.RevocationReason;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
-import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
+import org.bouncycastle.openpgp.PGPSignature;
 import org.pgpainless.PGPainless;
 import org.pgpainless.algorithm.KeyFlag;
+import org.pgpainless.algorithm.RevocationState;
 import org.pgpainless.key.OpenPgpFingerprint;
 import org.pgpainless.key.info.KeyRingInfo;
+import org.pgpainless.key.util.RevocationAttributes;
 import org.pgpainless.policy.Policy;
-import sun.nio.ch.Net;
-
-import javax.annotation.Nonnull;
+import org.pgpainless.signature.subpackets.SignatureSubpacketsUtil;
 
 public class Network {
 
@@ -34,6 +36,12 @@ public class Network {
         this.referenceTime = referenceTime;
     }
 
+    /**
+     * Create an empty {@link Network}.
+     *
+     * @param referenceTime reference time for evaluation
+     * @return network
+     */
     public static Network empty(@Nonnull ReferenceTime referenceTime) {
         return new Network(
                 new HashMap<>(),
@@ -42,6 +50,14 @@ public class Network {
                 referenceTime);
     }
 
+    /**
+     * Create a {@link Network} from a set of certificates.
+     *
+     * @param certificates set of certificates
+     * @param policy evaluation policy
+     * @param optReferenceTime reference time for evaluation
+     * @return network
+     */
     public static Network fromCertificates(
             Iterable<PGPPublicKeyRing> certificates,
             Policy policy,
@@ -63,6 +79,13 @@ public class Network {
         );
     }
 
+    /**
+     * Create a {@link Network} from a set of validated certificates.
+     *
+     * @param validatedCertificates set of validated certificates
+     * @param referenceTime reference time
+     * @return network
+     */
     public static Network fromValidCertificates(
             Iterable<KeyRingInfo> validatedCertificates,
             ReferenceTime referenceTime) {
@@ -75,6 +98,8 @@ public class Network {
         for (KeyRingInfo cert : validatedCertificates) {
             byFingerprint.put(cert.getFingerprint(), cert);
             List<KeyRingInfo> byKeyIdEntry = byKeyId.get(cert.getKeyId());
+
+            //noinspection Java8MapApi
             if (byKeyIdEntry == null) {
                 byKeyIdEntry = new ArrayList<>();
                 byKeyId.put(cert.getKeyId(), byKeyIdEntry);
@@ -84,7 +109,7 @@ public class Network {
             certSynopsisMap.put(cert.getFingerprint(),
                     new CertSynopsis(cert.getFingerprint(),
                             cert.getExpirationDateForUse(KeyFlag.CERTIFY_OTHER),
-                            cert.getRevocationSelfSignature() != null,
+                            revocationStateFromSignature(cert.getRevocationSelfSignature()),
                             new HashSet<>(cert.getValidUserIds())));
         }
 
@@ -92,5 +117,19 @@ public class Network {
         Map<OpenPgpFingerprint, List<CertificationSet>> reverseEdges = new HashMap<>();
 
         return new Network(certSynopsisMap, edges, reverseEdges, referenceTime);
+    }
+
+    private static RevocationState revocationStateFromSignature(PGPSignature revocation) {
+        if (revocation == null) {
+            return RevocationState.notRevoked;
+        }
+
+        RevocationReason revocationReason = SignatureSubpacketsUtil.getRevocationReason(revocation);
+        if (revocationReason == null) {
+            return RevocationState.hardRevoked;
+        }
+
+        return RevocationAttributes.Reason.isHardRevocation(revocationReason.getRevocationReason()) ?
+                RevocationState.hardRevoked : RevocationState.softRevoked;
     }
 }
