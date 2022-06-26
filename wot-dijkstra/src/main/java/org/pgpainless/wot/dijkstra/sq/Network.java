@@ -119,6 +119,22 @@ public class Network {
         return new Network(certSynopsisMap, edges, reverseEdges, referenceTime);
     }
 
+    public Map<OpenPgpFingerprint, CertSynopsis> getNodes() {
+        return new HashMap<>(nodes);
+    }
+
+    public Map<OpenPgpFingerprint, List<CertificationSet>> getEdges() {
+        return new HashMap<>(edges);
+    }
+
+    public Map<OpenPgpFingerprint, List<CertificationSet>> getReverseEdges() {
+        return new HashMap<>(reverseEdges);
+    }
+
+    public ReferenceTime getReferenceTime() {
+        return referenceTime;
+    }
+
     private static RevocationState revocationStateFromSignature(PGPSignature revocation) {
         if (revocation == null) {
             return RevocationState.notRevoked;
