@@ -62,6 +62,54 @@ public final class CollectionUtils {
         return false;
     }
 
+    public static <T> boolean contains(Iterator<T> iterator, T t) {
+        return hasMatching(iterator, new Filter<T>() {
+            @Override
+            public boolean accept(T t0) {
+                return t.equals(t0);
+            }
+        });
+    }
+
+    public static <T> boolean hasMatching(Iterator<T> iterator, Filter<T> filter) {
+        T matchingItem = firstMatching(iterator, filter);
+        return matchingItem != null;
+    }
+
+    public static <T> T firstMatching(Iterator<T> iterator, Filter<T> filter) {
+        while (iterator.hasNext()) {
+            T item = iterator.next();
+            if (filter.accept(item)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public static <T,N> Iterator<N> map(Iterator<T> iterator, Mapper<T, N> valueMapper) {
+        return new Iterator<N>() {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public N next() {
+                return valueMapper.mapValue(iterator.next());
+            }
+        };
+    }
+
+    @FunctionalInterface
+    interface Filter<T> {
+        boolean accept(T t);
+    }
+
+    @FunctionalInterface
+    interface Mapper<T, N> {
+        N mapValue(T item);
+    }
+
     /**
      * Add all items from the iterator to the collection.
      *
