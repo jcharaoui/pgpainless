@@ -100,6 +100,13 @@ public final class CollectionUtils {
         };
     }
 
+    public static <T, N> N reduce(Iterator<T> iterator, Reducer<T, N> reducer) {
+        while (iterator.hasNext()) {
+            reducer.accumulate(iterator.next());
+        }
+        return reducer.getResult();
+    }
+
     @FunctionalInterface
     interface Filter<T> {
         boolean accept(T t);
@@ -108,6 +115,12 @@ public final class CollectionUtils {
     @FunctionalInterface
     interface Mapper<T, N> {
         N mapValue(T item);
+    }
+
+    interface Reducer<T, N> {
+        void accumulate(T item);
+
+        N getResult();
     }
 
     /**
