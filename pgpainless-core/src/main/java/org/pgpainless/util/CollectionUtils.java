@@ -107,6 +107,15 @@ public final class CollectionUtils {
         return reducer.getResult();
     }
 
+    public static int count(Iterator<?> iterator) {
+        int num = 0;
+        while (iterator.hasNext()) {
+            iterator.next();
+            num++;
+        }
+        return num;
+    }
+
     @FunctionalInterface
     interface Filter<T> {
         boolean accept(T t);
