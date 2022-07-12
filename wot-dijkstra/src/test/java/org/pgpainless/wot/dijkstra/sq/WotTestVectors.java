@@ -1,18 +1,17 @@
 package org.pgpainless.wot.dijkstra.sq;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.junit.jupiter.api.Test;
 import org.pgpainless.PGPainless;
-import org.pgpainless.util.ArmorUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLOutput;
+import org.pgpainless.algorithm.Trustworthiness;
+import org.pgpainless.key.protection.SecretKeyRingProtector;
+import org.pgpainless.signature.subpackets.CertificationSubpackets;
+import org.pgpainless.util.Passphrase;
 
 public class WotTestVectors {
 
@@ -37,6 +36,10 @@ public class WotTestVectors {
         return "superS3cureP4ssphrase";
     }
 
+    public SecretKeyRingProtector getFooBankCaProtector() {
+        return SecretKeyRingProtector.unlockAnyKeyWith(Passphrase.fromPassword(getFooBankCaPassphrase()));
+    }
+
     public PGPSecretKeyRing getFreshFooBankEmployeeKey() throws IOException {
         return PGPainless.readKeyRing().secretKeyRing(getTestResourceInputStream("test_vectors/freshly_generated/foobankEmployeeKey.asc"));
     }
@@ -49,6 +52,10 @@ public class WotTestVectors {
         return "iLoveWorking@FooBank";
     }
 
+    public SecretKeyRingProtector getFooBankEmployeeProtector() {
+        return SecretKeyRingProtector.unlockAnyKeyWith(Passphrase.fromPassword(getFooBankEmployeePassphrase()));
+    }
+
     public PGPSecretKeyRing getFreshFooBankAdminKey() throws IOException {
         return PGPainless.readKeyRing().secretKeyRing(getTestResourceInputStream("test_vectors/freshly_generated/foobankAdminKey.asc"));
     }
@@ -59,6 +66,10 @@ public class WotTestVectors {
 
     public String getFooBankAdminPassphrase() {
         return "keepFooBankSecure";
+    }
+
+    public SecretKeyRingProtector getFooBankAdminProtector() {
+        return SecretKeyRingProtector.unlockAnyKeyWith(Passphrase.fromPassword(getFooBankAdminPassphrase()));
     }
 
     public PGPSecretKeyRing getFreshFooBankCustomerKey() throws IOException {
@@ -86,8 +97,86 @@ public class WotTestVectors {
     }
 
     @Test
-    public void test() {
-        URL url = getTestResourceURL("test_vectors/freshly_generated/foobankCaKey.asc");
+    public void crossSign() throws IOException, PGPException {
+        PGPSecretKeyRing freshFooBankCaKey = getFreshFooBankCaKey();
+        PGPPublicKeyRing freshFooBankCaCert = getFreshFooBankCaCert();
+
+        PGPSecretKeyRing freshFooBankEmployeeKey = getFreshFooBankEmployeeKey();
+        PGPPublicKeyRing freshFooBankEmployeeCert = getFreshFooBankEmployeeCert();
+
+        PGPSecretKeyRing freshFooBankAdminKey = getFreshFooBankAdminKey();
+        PGPPublicKeyRing freshFooBankAdminCert = getFreshFooBankAdminCert();
+
+        PGPSecretKeyRing freshFooBankCustomerKey = getFreshFooBankCustomerKey();
+        PGPPublicKeyRing freshFooBankCustomerCert = getFreshFooBankCustomerCert();
+
+        // CA signs Employee
+        PGPPublicKeyRing caCertifiedFooBankEmployeeCert = PGPainless.certify()
+                .userIdOnCertificate("Foo Bank Employee <employee@foobank.com>", freshFooBankEmployeeCert)
+                .withKey(freshFooBankCaKey, getFooBankCaProtector())
+                .buildWithSubpackets(new CertificationSubpackets.Callback() {
+                    @Override
+                    public void modifyHashedSubpackets(CertificationSubpackets hashedSubpackets) {
+                        hashedSubpackets.addNotationData(false, "affiliation@foobank.com", "employee");
+                    }
+                })
+                .getCertifiedCertificate();
+
+        // Employee delegates trust to CA
+        PGPPublicKeyRing employeeDelegatedCaCert = PGPainless.certify()
+                .certificate(freshFooBankCaCert, Trustworthiness.fullyTrusted().introducer())
+                .withKey(freshFooBankEmployeeKey, getFooBankEmployeeProtector())
+                .buildWithSubpackets(new CertificationSubpackets.Callback() {
+                    @Override
+                    public void modifyHashedSubpackets(CertificationSubpackets hashedSubpackets) {
+                        hashedSubpackets.setRegularExpression("*@foobank.com$");
+                        hashedSubpackets.setExportable(false);
+                    }
+                })
+                .getCertifiedCertificate();
+
+        // CA signs Admin
+        PGPPublicKeyRing caCertifiedFooBankAdminCert = PGPainless.certify()
+                .userIdOnCertificate("Foo Bank Admin <admin@foobank.com>", freshFooBankAdminCert)
+                .withKey(freshFooBankCaKey, getFooBankCaProtector())
+                .buildWithSubpackets(new CertificationSubpackets.Callback() {
+                    @Override
+                    public void modifyHashedSubpackets(CertificationSubpackets hashedSubpackets) {
+                        hashedSubpackets.addNotationData(false, "affiliation@foobank.com", "administrator");
+                    }
+                })
+                .getCertifiedCertificate();
+
+        // Admin delegates trust to CA
+        PGPPublicKeyRing adminDelegatedCaCert = PGPainless.certify()
+                .certificate(freshFooBankCaCert, Trustworthiness.fullyTrusted().introducer())
+                .withKey(freshFooBankAdminKey, getFooBankAdminProtector())
+                .buildWithSubpackets(new CertificationSubpackets.Callback() {
+                    @Override
+                    public void modifyHashedSubpackets(CertificationSubpackets hashedSubpackets) {
+                        hashedSubpackets.setRegularExpression("*@foobank.com$");
+                        hashedSubpackets.setExportable(false);
+                    }
+                })
+                .getCertifiedCertificate();
+
+        // Customer delegates trust to CA
+        PGPPublicKeyRing customerDelegatedCaCert = PGPainless.certify()
+                .certificate(freshFooBankCaCert, Trustworthiness.fullyTrusted().introducer())
+                .withKey(freshFooBankCustomerKey, SecretKeyRingProtector.unprotectedKeys())
+                .buildWithSubpackets(new CertificationSubpackets.Callback() {
+                    @Override
+                    public void modifyHashedSubpackets(CertificationSubpackets hashedSubpackets) {
+                        hashedSubpackets.setRegularExpression("*@foobank.com$");
+                        hashedSubpackets.setExportable(false);
+                    }
+                })
+                .getCertifiedCertificate();
+
+        System.out.println(PGPainless.asciiArmor(caCertifiedFooBankEmployeeCert));
+        System.out.println(PGPainless.asciiArmor(employeeDelegatedCaCert));
+        System.out.println(PGPainless.asciiArmor(caCertifiedFooBankAdminCert));
+        System.out.println(PGPainless.asciiArmor(freshFooBankCustomerCert));
     }
 
     private static InputStream getTestResourceInputStream(String resource) {
@@ -96,47 +185,5 @@ public class WotTestVectors {
             throw new IllegalArgumentException(String.format("Unknown resource %s", resource));
         }
         return inputStream;
-    }
-
-    private static URL getTestResourceURL(String resource) {
-        URL url = WotTestVectors.class.getClassLoader().getResource(resource);
-        if (url == null) {
-            throw new IllegalArgumentException(String.format("Unknown resource %s", resource));
-        }
-
-        return url;
-    }
-
-    @Test
-    public void generate() throws PGPException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IOException {
-        generateCertificates();
-    }
-
-    private void generateCertificates() throws PGPException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IOException {
-        String fooBankEmployeePassphrase = "iLoveWorking@FooBank";
-        PGPSecretKeyRing fooBankEmployeeKey = PGPainless.generateKeyRing()
-                .modernKeyRing("Foo Bank Employee <employee@foobank.com>");
-        PGPPublicKeyRing fooBankEmployeeCert = PGPainless.extractCertificate(fooBankEmployeeKey);
-        System.out.println(ArmorUtils.toAsciiArmoredString(fooBankEmployeeKey));
-        System.out.println(ArmorUtils.toAsciiArmoredString(fooBankEmployeeCert));
-
-        String fooBankAdminPassphrase = "keepFooBankSecure";
-        PGPSecretKeyRing fooBankAdminKey = PGPainless.generateKeyRing()
-                .modernKeyRing("Foo Bank Admin <admin@foobank.com>", fooBankAdminPassphrase);
-        PGPPublicKeyRing fooBankAdminCert = PGPainless.extractCertificate(fooBankAdminKey);
-        System.out.println(ArmorUtils.toAsciiArmoredString(fooBankAdminKey));
-        System.out.println(ArmorUtils.toAsciiArmoredString(fooBankAdminCert));
-
-        PGPSecretKeyRing fooBankCustomerKey = PGPainless.generateKeyRing()
-                .modernKeyRing("Customer <customer@example.com>");
-        PGPPublicKeyRing fooBankCustomerCert = PGPainless.extractCertificate(fooBankCustomerKey);
-        System.out.println(ArmorUtils.toAsciiArmoredString(fooBankCustomerKey));
-        System.out.println(ArmorUtils.toAsciiArmoredString(fooBankCustomerCert));
-
-        PGPSecretKeyRing fooBankAttackerKey = PGPainless.generateKeyRing()
-                .modernKeyRing("Attacker <employee@barbank.com>");
-        PGPPublicKeyRing fooBankAttackerCert = PGPainless.extractCertificate(fooBankAttackerKey);
-        System.out.println(ArmorUtils.toAsciiArmoredString(fooBankAttackerKey));
-        System.out.println(ArmorUtils.toAsciiArmoredString(fooBankAttackerCert));
     }
 }
