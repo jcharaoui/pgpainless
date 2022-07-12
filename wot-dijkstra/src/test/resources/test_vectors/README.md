@@ -36,10 +36,10 @@ e[Bar Bank CA &ltca&#64barbank.com&gt];
 f[Bar Bank Employee &ltemployee&#64barbank.com&gt];
 g[Foo Bank Employee &#40Attacker&#41 &ltemployee&#64foobank.com&gt];
 
-a == generic certification ==> b & c;
-b & c & d -- 1:120:&quot&lt&#91^&gt&#93&#43&#91&#64.&#93foobank\.com>$&quot --> a;
-e == generic certification ==> f;
-c -- 1:120:&quot&lt&#91^&gt&#93&#43&#91&#64.&#93barbank\.com>$&quot --> e;
+a -- generic certification --> b & c;
+b & c & d == 1:120:&quot&lt&#91^&gt&#93&#43&#91&#64.&#93foobank\.com>$&quot ==> a;
+e -- generic certification --> f;
+c == 1:120:&quot&lt&#91^&gt&#93&#43&#91&#64.&#93barbank\.com>$&quot ==> e;
 ```
 
 ## Useful Resources:
